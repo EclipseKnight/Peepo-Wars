@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import game.Board;
+import game.Game;
 import game.InputHandler;
 import game.sprites.Ammunition;
 import game.sprites.Sprite;
@@ -88,8 +89,10 @@ public class Ship extends Sprite {
 	        	if(input.left.isPressed()) {
 	        		dx = -SHIP_SPEED;
 	        	}
-	        	if(input.fire.isPressed()) {
-	        		fire();
+	        	if(input.space.isPressed()) {
+	        		if(Game.gameState == 0) {
+	        			fire();
+	        		}
 	        	}
 	        	if(input.one.isPressed()) {
 	        		weapon = 1;

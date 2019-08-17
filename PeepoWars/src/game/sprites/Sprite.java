@@ -1,11 +1,8 @@
 package game.sprites;
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.ImageIcon;
-
-import game.Board;
 
 public class Sprite {
 	protected int x;

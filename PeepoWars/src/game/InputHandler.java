@@ -31,7 +31,7 @@ public class InputHandler implements KeyListener {
     public Key down = new Key();
     public Key left = new Key();
     public Key right = new Key();
-    public Key fire = new Key();
+    public Key space = new Key();
     public Key one = new Key();
     public Key two = new Key();
     public Key three = new Key();
@@ -68,7 +68,7 @@ public class InputHandler implements KeyListener {
             right.toggle(isPressed);
         }
         if(keyCode == KeyEvent.VK_SPACE) {
-        	fire.toggle(isPressed);
+        	space.toggle(isPressed);
         }
         if(keyCode == KeyEvent.VK_1) {
         	one.toggle(isPressed);

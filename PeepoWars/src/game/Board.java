@@ -10,7 +10,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.Rectangle2D.Double;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -33,14 +32,12 @@ public class Board extends JPanel implements ActionListener {
 	private final int ICRAFT_X = 40;
     private final int ICRAFT_Y = 60;
     private final int UPDATE_DELAY = 20;
-    private final int RENDER_DELAY = 0;
     public static final double SCALE = 2;
     private final boolean DEVMENU = true;
     public static boolean SHOWHITBOX = false;
     private List<Enemy> enemies;
     private List<Ship> ships;
 	private Timer updateTimer;
-	private Timer renderTimer;
 	private Ship ship;
 	public InputHandler input;
 	
@@ -49,7 +46,20 @@ public class Board extends JPanel implements ActionListener {
 	public Board() {
 		
 		initBoard();
+		initShips();
+		initEnemies();
+		initTimer();
 		startTime = System.currentTimeMillis();
+	}
+	
+	private void restart() {
+		enemies.clear();
+		ships.clear();
+		startTime = System.currentTimeMillis();;
+		endTime = 0;
+		Game.gameState = 0;
+		initShips();
+		initEnemies();
 	}
 	
 	private void initBoard() {
@@ -58,17 +68,22 @@ public class Board extends JPanel implements ActionListener {
 		setFocusable(true);
 		setBounds(0, 0, Game.BWIDTH, Game.BHEIGHT);
 		
+	}
+	
+	private void initShips() {
 		ship = new Ship(ICRAFT_X, ICRAFT_Y, input);
 		ships = new ArrayList<>();
 		ships.add(ship);
-		initEnemies();
-		updateTimer = new Timer(UPDATE_DELAY, this);
-		updateTimer.start();
 	}
 	
 	public void initEnemies() {
 		enemies = new ArrayList<>();
 		enemies.add(new StrobeKing(Game.BWIDTH-150, Game.BHEIGHT/2));
+	}
+	
+	private void initTimer() {
+		updateTimer = new Timer(UPDATE_DELAY, this);
+		updateTimer.start();
 	}
 	
 	@Override
@@ -148,8 +163,9 @@ public class Board extends JPanel implements ActionListener {
 			g2d.setColor(Color.cyan);
 			g2d.drawString("You Win!", 200, 90);
 			g2d.drawString("Time: " + endTime + " secs", 50, 250);
-			updateTimer.stop();
-			
+			g2d.setFont(new Font("Consolas", 100, 50));
+			g2d.drawString("Press Space To Restart", 50, 300);
+			Game.gameState = 1;
 		}
 	}
 	
@@ -159,10 +175,12 @@ public class Board extends JPanel implements ActionListener {
 			g2d.setColor(Color.cyan);
 			g2d.drawString("You Lose!", 200, 90);
 			g2d.drawString("Time: " + endTime + " secs", 50, 250);
-			updateTimer.stop();
+			g2d.setFont(new Font("Consolas", 100, 50));
+			g2d.drawString("Press Space To Restart", 50, 300);
 			for(Enemy e: enemies) {
 				e.stopTimer();
 			}
+			Game.gameState = 1;
 		}
 	}
 	private void drawProjectiles(Graphics2D g2d) {
@@ -265,10 +283,14 @@ public class Board extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		 ship.tick();
-		 updateMissiles();
-		 updateShip();
-		 updateEnemies();
-		 checkCollision();
+		 if(Game.gameState == 0) {
+			 updateMissiles();
+			 updateShip();
+			 updateEnemies();
+			 checkCollision();
+		 } else if(Game.gameState == 1 && input.space.isPressed()) {
+			 restart();
+		 }
 		 repaint();
 	}
 	
