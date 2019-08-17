@@ -8,4 +8,7 @@ Controls:
 W,A,S,D or Arrow Keys for movement.
 
 Space to fire.
+
 1, 2 to toggle between weapons (will improve later).
+
+P to pause and play music.
