@@ -18,7 +18,10 @@ public class StrobeKing extends Boss {
 	private final static boolean ISBOSS = true;
 	private List<Attack> attacks;
 	private int atkCounter = 0;
+	
 	private boolean moveUp = true;
+	private int pixelsMoved = 0;
+	
 	public StrobeKing(int x, int y) {
 		super(x, y, SPEED, DELAY, HEALTH, HEALTH, ISBOSS);
 		initBoss();
@@ -66,7 +69,11 @@ public class StrobeKing extends Boss {
 	}
 	
 	public void move() {
-		
+		pixelsMoved += SPEED;
+		if(pixelsMoved > 150) {
+			moveUp = flipCoin();
+			pixelsMoved = 0;
+		}
 		if(y >= Game.BHEIGHT-150) {
 			moveUp = false;
 			
@@ -82,7 +89,15 @@ public class StrobeKing extends Boss {
 		
 		
 	}
-	
+	public boolean flipCoin() {
+		double x = Math.random();
+		if(x >= .5)
+			return true;
+		else if(x < .5) {
+			return false;
+		}
+		return false;
+	}
 	public Rectangle2D getHitBox() {
 		return new Rectangle2D.Double(x, y+20, getWidth(), getHeight()*.8);
 	}

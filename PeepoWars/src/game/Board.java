@@ -38,13 +38,14 @@ public class Board extends JPanel implements ActionListener {
     private final boolean DEVMENU = true;
     public static boolean SHOWHITBOX = true;
     private List<Enemy> enemies;
+    private List<Ship> ships;
 	private Timer updateTimer;
 	private Timer renderTimer;
 	private Ship ship;
 	public InputHandler input;
 	
-	private long startTime;
-	private long endTime;
+	private double startTime;
+	private double endTime;
 	public Board() {
 		
 		initBoard();
@@ -58,6 +59,8 @@ public class Board extends JPanel implements ActionListener {
 		setBounds(0, 0, Game.BWIDTH, Game.BHEIGHT);
 		
 		ship = new Ship(ICRAFT_X, ICRAFT_Y, input);
+		ships = new ArrayList<>();
+		ships.add(ship);
 		initEnemies();
 		updateTimer = new Timer(UPDATE_DELAY, this);
 		updateTimer.start();
@@ -133,11 +136,33 @@ public class Board extends JPanel implements ActionListener {
 	
 	private void drawTimer(Graphics2D g2d) {
 		g2d.setColor(Color.DARK_GRAY);
-		g2d.drawString("Time: " + (System.currentTimeMillis()-startTime)/1000, 100, 10);
+		g2d.drawString("Time: " + (System.currentTimeMillis()-startTime)/1000.0, 100, 10);
+		
+		win(g2d);
+		lose(g2d);
+	}
+	
+	private void win(Graphics2D g2d) {
 		if(enemies.size() <= 0) {
 			g2d.setFont(new Font("Consolas", 100, 100));
 			g2d.setColor(Color.cyan);
-			g2d.drawString("Time: " + endTime, 200, 250);
+			g2d.drawString("You Win!", 200, 90);
+			g2d.drawString("Time: " + endTime + " secs", 50, 250);
+			updateTimer.stop();
+			
+		}
+	}
+	
+	private void lose(Graphics2D g2d) {
+		if(ships.size() <=0 ) {
+			g2d.setFont(new Font("Consolas", 100, 100));
+			g2d.setColor(Color.cyan);
+			g2d.drawString("You Lose!", 200, 90);
+			g2d.drawString("Time: " + endTime + " secs", 50, 250);
+			updateTimer.stop();
+			for(Enemy e: enemies) {
+				e.stopTimer();
+			}
 		}
 	}
 	private void drawProjectiles(Graphics2D g2d) {
@@ -311,8 +336,9 @@ public class Board extends JPanel implements ActionListener {
 			if(enemy.isVisible()) {
 				enemy.move();
 			} else {
+				enemy.stopTimer();
 				enemies.remove(i);
-				endTime = (System.currentTimeMillis()-startTime)/1000;
+				endTime = (System.currentTimeMillis()-startTime)/1000.0;
 			}
 		}
 		
@@ -323,7 +349,16 @@ public class Board extends JPanel implements ActionListener {
 	}
 	
 	private void updateShip() {
-	    ship.move();    
+		for(int i = 0; i < ships.size(); i++) {
+			if(ships.get(i).isVisible()) {
+				ship.move();  
+			} else {
+				ships.remove(i);
+				endTime = (System.currentTimeMillis()-startTime)/1000.0;
+			}
+		}
+	      
+	    
 	}    
 	
 	private void updateMissiles() {

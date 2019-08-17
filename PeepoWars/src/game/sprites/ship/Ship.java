@@ -33,6 +33,7 @@ public class Ship extends Sprite {
 		if(health <= 0) {
 			loadImage("resources/shipdie.gif");
 			getImageDimensions(.3);
+			setVisible(false);
 		}
 	}
 	

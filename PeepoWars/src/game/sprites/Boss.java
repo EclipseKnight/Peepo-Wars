@@ -6,15 +6,19 @@ import java.awt.event.ActionListener;
 import javax.swing.Timer;
 
 public class Boss extends Enemy implements ActionListener {
-
-	
 	private Timer timer;
+	
 	public Boss(int x, int y, int speed, int delay, double health, double maxHealth, boolean isBoss) {
 		super(x, y);
 	}
+	
 	public void startTimer(int delay) {
 		timer = new Timer(delay, this);
 		timer.start();
+	}
+	
+	public void stopTimer() {
+		timer.stop();
 	}
 	
 	public void setTimerDelay(int delay) {

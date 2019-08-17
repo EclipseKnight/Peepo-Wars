@@ -43,6 +43,10 @@ public class Enemy extends Sprite {
 		
 	}
 	
+	public void stopTimer() {
+		
+	}
+	
 	public int getSpeed() {
 		return this.speed;
 	}
