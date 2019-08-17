@@ -67,10 +67,10 @@ public class StrobeKing extends Boss {
 	
 	public void move() {
 		
-		if(y >= Game.BHEIGHT-95) {
+		if(y >= Game.BHEIGHT-150) {
 			moveUp = false;
 			
-		} else if(y < Game.BHEIGHT-95 && moveUp) {
+		} else if(y < Game.BHEIGHT-150 && moveUp) {
 			y += SPEED;
 		}
 		

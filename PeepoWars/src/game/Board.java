@@ -4,11 +4,13 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.Shape;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.Rectangle2D.Double;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,6 +21,8 @@ import javax.swing.Timer;
 import game.sprites.Ammunition;
 import game.sprites.Attack;
 import game.sprites.Enemy;
+import game.sprites.ammunition.Laser;
+import game.sprites.ammunition.Missile;
 import game.sprites.enemies.StrobeKing;
 import game.sprites.ship.Ship;
 
@@ -32,7 +36,7 @@ public class Board extends JPanel implements ActionListener {
     private final int RENDER_DELAY = 0;
     public static final double SCALE = 2;
     private final boolean DEVMENU = true;
-    public static boolean SHOWHITBOX = false;
+    public static boolean SHOWHITBOX = true;
     private List<Enemy> enemies;
 	private Timer updateTimer;
 	private Timer renderTimer;
@@ -57,8 +61,6 @@ public class Board extends JPanel implements ActionListener {
 		initEnemies();
 		updateTimer = new Timer(UPDATE_DELAY, this);
 		updateTimer.start();
-//		renderTimer = new Timer(RENDER_DELAY, this);
-//		renderTimer.start();
 	}
 	
 	public void initEnemies() {
@@ -71,38 +73,62 @@ public class Board extends JPanel implements ActionListener {
 		super.paintComponent(g);
 		doDrawing(g);
 		
-//		Toolkit.getDefaultToolkit().sync();
+		Toolkit.getDefaultToolkit().sync();
 	}
 	
 	private void doDrawing(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
+		g2d.drawRect(0, Game.BHEIGHT, Game.BWIDTH, 2);
+		if(DEVMENU) {
+			drawDevMenu(g2d);
+		}
+
+		borderCollision();
+		drawShip(g2d);
+		drawEnemies(g2d);
+		drawProjectiles(g2d);
+		drawHealthBar(g2d);
+		drawWeaponBar(g2d);
+		drawTimer(g2d);
 		
+		
+		
+	}
+	
+	private void borderCollision() {
 		if(ship.getX() >= Game.BWIDTH-20) {
 			ship.setX(ship.getX() - ship.getSpeed());
 		}
 		if(ship.getX() <= 0) {
 			ship.setX(ship.getX() + ship.getSpeed());
 		}
-		if(ship.getY() >= Game.BHEIGHT) {
+		if(ship.getY() >= Game.BHEIGHT-20) {
 			ship.setY(ship.getY() - ship.getSpeed());
 		}
 		if(ship.getY() <= 0) {
 			ship.setY(ship.getY() + ship.getSpeed());
 		}
+	}
+	
+	private void drawWeaponBar(Graphics2D g2d) {
+		List<Image> images = new ArrayList<>();
 		
-		if(DEVMENU) {
-			drawDevMenu(g2d);
+		Image laser = new Laser(0, 0).getImage();
+		Image missile = new Missile(0, 0).getImage();
+		images.add(0, laser);
+		images.add(1, missile);
+		
+		Rectangle2D slot;
+		for(int i = 0; i < images.size(); i++) {
+			slot = new Rectangle2D.Double((40 * i)+10, Game.BHEIGHT+20, 30, 30);
+			g2d.drawImage(images.get(i), (int)(slot.getX())+5, (int)(slot.getY())+10, (int)(images.get(i).getWidth(null)*SCALE), (int)(images.get(i).getHeight(null)*SCALE), null);
+			if(ship.getWeapon() == i+1) {
+				g2d.setColor(Color.blue);
+			} else 
+				g2d.setColor(Color.darkGray);
+			g2d.draw(slot);
+			
 		}
-
-		
-		drawShip(g2d);
-		drawEnemies(g2d);
-		drawProjectiles(g2d);
-		drawHealthBar(g2d);
-		drawTimer(g2d);
-		
-		
-		
 	}
 	
 	private void drawTimer(Graphics2D g2d) {
@@ -164,7 +190,7 @@ public class Board extends JPanel implements ActionListener {
 		Rectangle health;
 		for(Enemy e : enemies) {
 			if(e.isBoss()) {
-				bar = new Rectangle( Game.BWIDTH-400, Game.BHEIGHT+40, 350, 20);
+				bar = new Rectangle( Game.BWIDTH-370, Game.BHEIGHT+65, 350, 20);
 				health = new Rectangle( bar.x+1, bar.y+1, barCalculateBoss(e, bar.width)-1, bar.height-1);
 			} else {
 				bar = new Rectangle( e.getX(), e.getY() + e.getHeight()+10, e.getWidth(), 10);
@@ -180,7 +206,7 @@ public class Board extends JPanel implements ActionListener {
 			
 		}
 		
-		bar = new Rectangle( 50, Game.BHEIGHT+40, 350, 20);
+		bar = new Rectangle( 10, Game.BHEIGHT+65, 350, 20);
 		health = new Rectangle( bar.x+1, bar.y+1, barCalculateShip(ship, bar.width)-1, bar.height-1);
 		g2d.setColor(Color.gray);
 		g2d.draw(bar);
@@ -237,12 +263,15 @@ public class Board extends JPanel implements ActionListener {
 //				} 
 //			}
 // 		}
+		
+		Rectangle2D r1;
+		Rectangle2D r2;
 		List<Ammunition> ammunition = ship.getAmmoFired();
 		for(Enemy e : enemies) {
-			Rectangle2D r2 = e.getHitBox();
+			r2 = e.getHitBox();
 			
 			for(Ammunition m : ammunition) {
-				Rectangle2D r1 = m.getHitBox();
+				r1 = m.getHitBox();
 				
 				if(r1.intersects(r2)) {
 					m.setVisible(false);
@@ -251,16 +280,25 @@ public class Board extends JPanel implements ActionListener {
 			}
 		}
 
-		Rectangle2D r1 = ship.getHitBox();
+		r1 = ship.getHitBox();
 		for(Enemy e : enemies) {
 			for(Attack a : e.getAttacks()) {
-				Rectangle2D r2 = a.getHitBox();
+				r2 = a.getHitBox();
 				
 				if(r1.intersects(r2)) {
 					a.setVisible(false);
 					ship.damage(a.getDamage());
 				}
 				
+			}
+		}
+		
+		r1 = ship.getHitBox();
+		for(Enemy e : enemies) {
+			r2 = e.getHitBox();
+			
+			if(r1.intersects(r2)) {
+				ship.damage(1);
 			}
 		}
 		
@@ -285,7 +323,6 @@ public class Board extends JPanel implements ActionListener {
 	}
 	
 	private void updateShip() {
-	    
 	    ship.move();    
 	}    
 	

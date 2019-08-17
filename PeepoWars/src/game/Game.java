@@ -9,7 +9,8 @@ public class Game extends JFrame {
 	private static final long serialVersionUID = -5100548670827443559L;
 	
 	public static final int BWIDTH = 1000;
-	public static final int BHEIGHT = 300;
+	public static final int BHEIGHT = 400;
+	public static int gameState = 0;
 	
 
 	
@@ -21,7 +22,7 @@ public class Game extends JFrame {
 		
 		add(new Board());
 		setTitle("Peepo Wars");
-		setSize(BWIDTH, BHEIGHT+100);
+		setSize(BWIDTH, BHEIGHT+125);
 	
 		
 		setLocationRelativeTo(null);

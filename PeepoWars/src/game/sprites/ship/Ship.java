@@ -48,6 +48,10 @@ public class Ship extends Sprite {
 		return SHIP_SPEED;
 	}
 	
+	public int getWeapon() {
+		return weapon;
+	}
+	
 	private void initShip() {
 		ammoFired = new ArrayList<>();
 		
@@ -60,6 +64,9 @@ public class Ship extends Sprite {
 	}
 	
 	public void move() {
+		if(health <= 0) {
+			
+		}
 		x += dx;
 		y += dy;
 	}
