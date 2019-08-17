@@ -36,7 +36,7 @@ public class Board extends JPanel implements ActionListener {
     private final int RENDER_DELAY = 0;
     public static final double SCALE = 2;
     private final boolean DEVMENU = true;
-    public static boolean SHOWHITBOX = true;
+    public static boolean SHOWHITBOX = false;
     private List<Enemy> enemies;
     private List<Ship> ships;
 	private Timer updateTimer;
