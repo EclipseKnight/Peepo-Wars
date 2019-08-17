@@ -42,6 +42,7 @@ public class InputHandler implements KeyListener {
     public Key eight = new Key();
     public Key nine = new Key();
     public Key h = new Key();
+    public Key r = new Key();
 
     public void keyPressed(KeyEvent e) {
         toggleKey(e.getKeyCode(), true);
@@ -99,6 +100,9 @@ public class InputHandler implements KeyListener {
         }
         if(keyCode == KeyEvent.VK_H) {
         	h.toggle(isPressed);
+        }
+        if(keyCode == KeyEvent.VK_R) {
+        	r.toggle(isPressed);
         }
         
     }

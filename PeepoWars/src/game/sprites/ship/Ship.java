@@ -90,9 +90,7 @@ public class Ship extends Sprite {
 	        		dx = -SHIP_SPEED;
 	        	}
 	        	if(input.space.isPressed()) {
-	        		if(Game.gameState == 0) {
-	        			fire();
-	        		}
+	        		fire();
 	        	}
 	        	if(input.one.isPressed()) {
 	        		weapon = 1;

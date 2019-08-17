@@ -164,7 +164,7 @@ public class Board extends JPanel implements ActionListener {
 			g2d.drawString("You Win!", 200, 90);
 			g2d.drawString("Time: " + endTime + " secs", 50, 250);
 			g2d.setFont(new Font("Consolas", 100, 50));
-			g2d.drawString("Press Space To Restart", 50, 300);
+			g2d.drawString("Press R To Restart", 50, 300);
 			Game.gameState = 1;
 		}
 	}
@@ -176,7 +176,7 @@ public class Board extends JPanel implements ActionListener {
 			g2d.drawString("You Lose!", 200, 90);
 			g2d.drawString("Time: " + endTime + " secs", 50, 250);
 			g2d.setFont(new Font("Consolas", 100, 50));
-			g2d.drawString("Press Space To Restart", 50, 300);
+			g2d.drawString("Press R To Restart", 50, 300);
 			for(Enemy e: enemies) {
 				e.stopTimer();
 			}
@@ -288,7 +288,8 @@ public class Board extends JPanel implements ActionListener {
 			 updateShip();
 			 updateEnemies();
 			 checkCollision();
-		 } else if(Game.gameState == 1 && input.space.isPressed()) {
+			 
+		 } else if(Game.gameState == 1 && input.r.isPressed()) {
 			 restart();
 		 }
 		 repaint();
