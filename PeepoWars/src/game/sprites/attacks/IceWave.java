@@ -15,7 +15,7 @@ public class IceWave extends Attack {
 	}
 	
 	public void initGFX() {
-		loadImage("resources/testwaveatk.png");
+		loadImage("animations/attacks/testwaveatk.png");
 		getImageDimensions(8);
 	}
 	

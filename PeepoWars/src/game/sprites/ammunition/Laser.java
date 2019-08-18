@@ -17,7 +17,7 @@ public class Laser extends Ammunition {
 	}
 
 	public void initGFX() {
-		 loadImage("resources/laser.png");
+		 loadImage("animations/ship/laser.png");
 		 getImageDimensions(1);
 	}
 	

@@ -16,7 +16,7 @@ public class IceFist extends Attack {
 	}
 	
 	public void initGFX() {
-		loadImage("resources/fistleft.gif");
+		loadImage("animations/attacks/fistleft.gif");
 		getImageDimensions(1);
 	}
 	

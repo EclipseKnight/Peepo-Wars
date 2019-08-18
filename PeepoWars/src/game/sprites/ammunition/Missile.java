@@ -6,7 +6,7 @@ import game.sprites.Ammunition;
 
 public class Missile extends Ammunition {
 
-	private final static int VELOCITY = 4;
+	private final static int VELOCITY = 5;
 	private final static int AMMO_NUM = 1;
 	private final static int DELAY = 600;
 	private final static int DAMAGE = 65;
@@ -17,7 +17,7 @@ public class Missile extends Ammunition {
 	}
 	
 	public void initGFX() {
-		 loadImage("resources/missile.png");
+		 loadImage("animations/ship/missile.png");
 		 getImageDimensions(1);
 	}
 	

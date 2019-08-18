@@ -43,7 +43,7 @@ public class StrobeKing extends Boss {
 	
 	public void initBoss() {
 		attacks = new ArrayList<Attack>();
-		loadImage("resources/strobeking.gif");
+		loadImage("animations/enemies/strobeking.gif");
 		getImageDimensions(1);	
 	}
 	
@@ -81,7 +81,7 @@ public class StrobeKing extends Boss {
 			y += SPEED;
 		}
 		
-		if(!moveUp && y >= 10) {
+		if(!moveUp && y >= 5) {
 			y -= SPEED;
 		} else if(y < 50) {
 			moveUp = true;

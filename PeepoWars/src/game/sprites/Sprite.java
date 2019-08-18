@@ -4,6 +4,9 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.ImageIcon;
 
+import game.CrashHandler;
+import resources.ResourceLoader;
+
 public class Sprite {
 	protected int x;
 	protected int y;
@@ -19,9 +22,12 @@ public class Sprite {
 	}
 	
 	protected void loadImage(String imageName) {
+		if(ResourceLoader.loadImage(imageName) != null) {
+			image = ResourceLoader.loadImage(imageName);
+		} else {
+			CrashHandler.throwError(imageName + " now found");
+		}
 		
-		ImageIcon ii = new ImageIcon(imageName);
-		image = ii.getImage();
 	}
 	
 	protected Image setImage(String imageName) {

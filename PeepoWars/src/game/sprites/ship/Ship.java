@@ -16,7 +16,7 @@ public class Ship extends Sprite {
 	private int dy;
 	private int weapon = 1;
 	private InputHandler input;
-	private final int SHIP_SPEED = 3;
+	private final int SHIP_SPEED = 4;
 	private long shootTime = 0;
 	private double health = 100;
 	private double maxHealth = 100;
@@ -29,10 +29,16 @@ public class Ship extends Sprite {
 		initShip();
 	}
 	
+	public void win() {
+		loadImage("animations/ship/shipwin.gif");
+		getImageDimensions(.6);
+		setVisible(false);
+	}
+	
 	public void damage(int damage) {
 		health -= damage;
 		if(health <= 0) {
-			loadImage("resources/shipdie.gif");
+			loadImage("animations/ship/shipdie.gif");
 			getImageDimensions(.3);
 			setVisible(false);
 		}
@@ -57,7 +63,7 @@ public class Ship extends Sprite {
 	private void initShip() {
 		ammoFired = new ArrayList<>();
 		
-		loadImage("resources/ship.png");
+		loadImage("animations/ship/ship.png");
 		getImageDimensions(1);
 	}
 	
@@ -66,11 +72,21 @@ public class Ship extends Sprite {
 	}
 	
 	public void move() {
-		if(health <= 0) {
-			
-		}
 		x += dx;
 		y += dy;
+		
+		if(getX() >= Game.BWIDTH-20) {
+			setX(getX() - getSpeed());
+		}
+		if(getX() <= 0) {
+			setX(getX() + getSpeed());
+		}
+		if(getY() >= Game.BHEIGHT-10) {
+			setY(getY() - getSpeed());
+		}
+		if(getY() <= 20) {
+			setY(getY() + getSpeed());
+		}
 	}
 	
 	 public void tick() {

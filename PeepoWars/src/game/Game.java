@@ -19,16 +19,13 @@ public class Game extends JFrame {
 	
 	public Game() {
 		 initUI();
-		 if(!(new File("resources/").isDirectory())) {
-			 JOptionPane.showMessageDialog(this, "Put this jar next to the resources folder nibba");
-		 }
 	}
 	
 	private void initUI() {
 		board = new Board();
 		add(board);
 		setTitle("Peepo Wars");
-		setSize(BWIDTH, BHEIGHT+125);
+		setSize(BWIDTH, BHEIGHT+135);
 		setLocationRelativeTo(null);
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

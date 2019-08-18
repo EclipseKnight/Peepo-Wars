@@ -34,18 +34,20 @@ public class InputHandler implements KeyListener {
     public Key space = new Key();
     public Key one = new Key();
     public Key two = new Key();
-    public Key three = new Key();
-    public Key four = new Key();
-    public Key five = new Key();
-    public Key six = new Key();
-    public Key seven = new Key();
-    public Key eight = new Key();
-    public Key nine = new Key();
     public Key h = new Key();
     public Key r = new Key();
+    public Key p = new Key();
 
     public void keyPressed(KeyEvent e) {
         toggleKey(e.getKeyCode(), true);
+        
+        if(e.getKeyCode() == KeyEvent.VK_P) {
+        	if(Board.audioPlayer.status.equals("muted")) {
+        		Board.audioPlayer.mute(false);
+        	} else if(Board.audioPlayer.status.equals("unmuted")) {
+        		Board.audioPlayer.mute(true);
+        	}
+        }
     }
 
     public void keyReleased(KeyEvent e) {
@@ -53,8 +55,9 @@ public class InputHandler implements KeyListener {
     }
 
     public void keyTyped(KeyEvent e) {
+    	
     }
-
+    
     public void toggleKey(int keyCode, boolean isPressed) {
         if (keyCode == KeyEvent.VK_W || keyCode == KeyEvent.VK_UP) {
             up.toggle(isPressed);
@@ -76,27 +79,6 @@ public class InputHandler implements KeyListener {
         }
         if(keyCode == KeyEvent.VK_2) {
         	two.toggle(isPressed);
-        }
-        if(keyCode == KeyEvent.VK_3) {
-        	three.toggle(isPressed);
-        }
-        if(keyCode == KeyEvent.VK_4) {
-        	four.toggle(isPressed);
-        }
-        if(keyCode == KeyEvent.VK_5) {
-        	five.toggle(isPressed);
-        }
-        if(keyCode == KeyEvent.VK_6) {
-        	six.toggle(isPressed);
-        }
-        if(keyCode == KeyEvent.VK_7) {
-        	seven.toggle(isPressed);
-        }
-        if(keyCode == KeyEvent.VK_8) {
-        	eight.toggle(isPressed);
-        }
-        if(keyCode == KeyEvent.VK_9) {
-        	nine.toggle(isPressed);
         }
         if(keyCode == KeyEvent.VK_H) {
         	h.toggle(isPressed);

@@ -23,6 +23,8 @@ import game.sprites.Enemy;
 import game.sprites.ammunition.Laser;
 import game.sprites.ammunition.Missile;
 import game.sprites.enemies.StrobeKing;
+import game.sprites.icons.MusicOff;
+import game.sprites.icons.MusicOn;
 import game.sprites.ship.Ship;
 
 public class Board extends JPanel implements ActionListener {
@@ -40,6 +42,7 @@ public class Board extends JPanel implements ActionListener {
 	private Timer updateTimer;
 	private Ship ship;
 	public InputHandler input;
+	public static AudioPlayer audioPlayer;
 	
 	private double startTime;
 	private double endTime;
@@ -48,6 +51,7 @@ public class Board extends JPanel implements ActionListener {
 		initBoard();
 		initShips();
 		initEnemies();
+		initAudioPlayer();
 		initTimer();
 		startTime = System.currentTimeMillis();
 	}
@@ -59,7 +63,7 @@ public class Board extends JPanel implements ActionListener {
 		endTime = 0;
 		Game.gameState = 0;
 		initShips();
-		initEnemies();
+ 		initEnemies();
 	}
 	
 	private void initBoard() {
@@ -86,6 +90,11 @@ public class Board extends JPanel implements ActionListener {
 		updateTimer.start();
 	}
 	
+	private void initAudioPlayer() {
+		audioPlayer = new AudioPlayer();
+		audioPlayer.play();
+	}
+	
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -96,38 +105,37 @@ public class Board extends JPanel implements ActionListener {
 	
 	private void doDrawing(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
+		
 		g2d.drawRect(0, Game.BHEIGHT, Game.BWIDTH, 2);
+		g2d.drawRect(0, 20, Game.BWIDTH, 2);
+		
 		if(DEVMENU) {
 			drawDevMenu(g2d);
 		}
-
-		borderCollision();
+		
 		drawShip(g2d);
 		drawEnemies(g2d);
 		drawProjectiles(g2d);
 		drawHealthBar(g2d);
 		drawWeaponBar(g2d);
+		drawSettingsBar(g2d);
 		drawTimer(g2d);
 		
-		
-		
 	}
 	
-	private void borderCollision() {
-		if(ship.getX() >= Game.BWIDTH-20) {
-			ship.setX(ship.getX() - ship.getSpeed());
-		}
-		if(ship.getX() <= 0) {
-			ship.setX(ship.getX() + ship.getSpeed());
-		}
-		if(ship.getY() >= Game.BHEIGHT-20) {
-			ship.setY(ship.getY() - ship.getSpeed());
-		}
-		if(ship.getY() <= 0) {
-			ship.setY(ship.getY() + ship.getSpeed());
-		}
+	private void drawSettingsBar(Graphics2D g2d) {
+		Image music;
+		g2d.setColor(Color.lightGray);
+		g2d.fillRoundRect(Game.BWIDTH/2-45, Game.BHEIGHT+50, 80, 40, 10, 10);
+		if(audioPlayer.getStatus().equals("unmuted")) {
+			music = new MusicOn(0, 0).getImage();
+			g2d.drawImage(music, Game.BWIDTH/2-40, Game.BHEIGHT+55, music.getWidth(null)*2, music.getHeight(null)*2,  null);
+		} else if(audioPlayer.getStatus().equals("muted")) {
+			music = new MusicOff(0,0).getImage();
+			g2d.drawImage(music, Game.BWIDTH/2-40, Game.BHEIGHT+55, music.getWidth(null)*2, music.getHeight(null)*2,  null);
+		} 
+		
 	}
-	
 	private void drawWeaponBar(Graphics2D g2d) {
 		List<Image> images = new ArrayList<>();
 		
@@ -166,6 +174,7 @@ public class Board extends JPanel implements ActionListener {
 			g2d.setFont(new Font("Consolas", 100, 50));
 			g2d.drawString("Press R To Restart", 50, 300);
 			Game.gameState = 1;
+			ship.win();
 		}
 	}
 	
