@@ -26,6 +26,7 @@ import game.sprites.enemies.StrobeKing;
 import game.sprites.icons.MusicOff;
 import game.sprites.icons.MusicOn;
 import game.sprites.ship.Ship;
+import resources.ResourceLoader;
 
 public class Board extends JPanel implements ActionListener {
 	
@@ -106,13 +107,9 @@ public class Board extends JPanel implements ActionListener {
 	private void doDrawing(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
 		
-		g2d.drawRect(0, Game.BHEIGHT, Game.BWIDTH, 2);
-		g2d.drawRect(0, 20, Game.BWIDTH, 2);
 		
-		if(DEVMENU) {
-			drawDevMenu(g2d);
-		}
 		
+		drawBackground(g2d);
 		drawShip(g2d);
 		drawEnemies(g2d);
 		drawProjectiles(g2d);
@@ -121,8 +118,17 @@ public class Board extends JPanel implements ActionListener {
 		drawSettingsBar(g2d);
 		drawTimer(g2d);
 		
+		g2d.drawRect(0, Game.BHEIGHT, Game.BWIDTH, 2);
+		g2d.drawRect(0, 20, Game.BWIDTH, 2);
+		
+		if(DEVMENU) {
+			drawDevMenu(g2d);
+		}
 	}
 	
+	private void drawBackground(Graphics2D g2d) {
+		g2d.drawImage(ResourceLoader.loadImage("animations/stage/starbackground.gif"), 0, 0, null);
+	}
 	private void drawSettingsBar(Graphics2D g2d) {
 		Image music;
 		g2d.setColor(Color.lightGray);
@@ -285,6 +291,7 @@ public class Board extends JPanel implements ActionListener {
 	private void drawDevMenu(Graphics2D g2d) {
 		
 		//This draws the ships current x and y position.
+		g2d.setColor(Color.darkGray);
 		g2d.drawString("x = " + ship.getX() + "y = " + ship.getY(), 0, 10);
 		
 	}
