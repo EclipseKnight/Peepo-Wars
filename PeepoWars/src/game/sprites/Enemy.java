@@ -4,12 +4,12 @@ import java.util.List;
 
 public class Enemy extends Sprite {
 
-	protected double maxHealth;
-	protected double health;
-	protected int speed;
-	protected int delay;
-	protected boolean isBoss;
-	protected List<Attack> attacks;
+	protected double maxHealth; //What its max health should be, mainly used to calculate HP bar drawing
+	protected double health; //Health of the enemy
+	protected int speed; //Speed of the enemy
+	protected int delay; //Delay for enemy attack timer, how fast it attacks.
+	protected boolean isBoss; //boolean for if the enemy is a boss or not
+	protected List<Attack> attacks; //List of attacks in order of how they are added.
 	public Enemy(int x, int y) {
 		super(x, y);
 	}
@@ -39,14 +39,6 @@ public class Enemy extends Sprite {
 		this.isBoss = isBoss;
 	}
 	
-	public void setTimerDelay(int delay) {
-		
-	}
-	
-	public void stopTimer() {
-		
-	}
-	
 	public int getSpeed() {
 		return this.speed;
 	}
@@ -67,13 +59,15 @@ public class Enemy extends Sprite {
 		return attacks;
 	}
 	
-	public void move() {
-		
-	}
+	public void setTimerDelay(int delay) {}
 	
-	public void attack() {
-		
-	}
+	public void stopTimer() {}
+	
+	public void startTimer() {}
+	
+	public void move() {}
+	
+	public void attack() {}
 	
 	public void damage(int damage) {
 		health -= damage;

@@ -2,14 +2,17 @@ package game;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,11 +23,14 @@ import javax.swing.Timer;
 import game.sprites.Ammunition;
 import game.sprites.Attack;
 import game.sprites.Enemy;
+import game.sprites.HitBox;
 import game.sprites.ammunition.Laser;
 import game.sprites.ammunition.Missile;
 import game.sprites.enemies.StrobeKing;
 import game.sprites.icons.MusicOff;
 import game.sprites.icons.MusicOn;
+import game.sprites.icons.Pause;
+import game.sprites.icons.Play;
 import game.sprites.ship.Ship;
 import resources.ResourceLoader;
 
@@ -32,41 +38,70 @@ public class Board extends JPanel implements ActionListener {
 	
 	private static final long serialVersionUID = -2451749377672043233L;
 	
-	private final int ICRAFT_X = 40;
-    private final int ICRAFT_Y = 60;
+	private final static int ICRAFT_X = 40;
+    private final static int ICRAFT_Y = 60;
     private final int UPDATE_DELAY = 20;
     public static final double SCALE = 2;
-    private final boolean DEVMENU = true;
+    public static boolean DEVMENU = false;
     public static boolean SHOWHITBOX = false;
-    private List<Enemy> enemies;
-    private List<Ship> ships;
-	private Timer updateTimer;
-	private Ship ship;
-	public InputHandler input;
+    private static List<Enemy> enemies;
+    private static List<Ship> ships;
+	private static Timer updateTimer;
+	private static Ship ship;
+	public static InputHandler input;
 	public static AudioPlayer audioPlayer;
+	public static Font gameFont;
 	
-	private double startTime;
-	private double endTime;
+	long lastTime = System.nanoTime();
+	double nanoSecondConversion = 1000000000.0/60;
+	double deltaSeconds = 0;
+	
+	private static double startTime;
+	private static double endTime;
+	
+	//Constructor for the Board object, initializes resources, ships, enemies, audio, and timer.		
 	public Board() {
 		
+		initResources();
 		initBoard();
 		initShips();
 		initEnemies();
 		initAudioPlayer();
 		initTimer();
+		
 		startTime = System.currentTimeMillis();
 	}
 	
-	private void restart() {
+	//Pauses updateTimer, enemy timers, and sets Game status to "Paused".
+	public static void pause() {
+		updateTimer.stop();
+		for(Enemy e : enemies) {
+			e.stopTimer();
+		}
+		Game.status = "paused";
+	}
+	
+	//Starts updateTimer, enemy timers, and sets Game status to "playing".
+	public static void resume() {
+		updateTimer.start();
+		for(Enemy e : enemies) {
+			e.startTimer();
+		}
+		Game.status = "playing";
+	}
+	
+	//Restarts and clears all lists and timers to be initialized again.
+	public static void restart() {
 		enemies.clear();
 		ships.clear();
-		startTime = System.currentTimeMillis();;
+		startTime = System.currentTimeMillis();
 		endTime = 0;
 		Game.gameState = 0;
 		initShips();
  		initEnemies();
 	}
 	
+	//Initializes the board and registers the input handler 
 	private void initBoard() {
 		input = new InputHandler(this);
 		setBackground(Color.black);
@@ -75,39 +110,57 @@ public class Board extends JPanel implements ActionListener {
 		
 	}
 	
-	private void initShips() {
+	//Creates the ship object and adds it to the ship list.
+	private static void initShips() {
 		ship = new Ship(ICRAFT_X, ICRAFT_Y, input);
 		ships = new ArrayList<>();
 		ships.add(ship);
 	}
 	
-	public void initEnemies() {
+	//Creates the starting list of enemies to spawn.
+	private static void initEnemies() {
 		enemies = new ArrayList<>();
-		enemies.add(new StrobeKing(Game.BWIDTH-150, Game.BHEIGHT/2));
+		enemies.add(new StrobeKing(Game.BWIDTH-180, Game.BHEIGHT/3));
 	}
 	
+	//Starts the updateTimer for sprite movements and actions.
 	private void initTimer() {
 		updateTimer = new Timer(UPDATE_DELAY, this);
 		updateTimer.start();
+		
 	}
 	
-	private void initAudioPlayer() {
+	//Starts the AudioPlayer for the background music.
+	private static void initAudioPlayer() {
 		audioPlayer = new AudioPlayer();
 		audioPlayer.play();
+	}
+	
+	//Loads the resources such as fonts.
+	private void initResources() {
+		try {
+			gameFont = Font.createFont(Font.TRUETYPE_FONT, ResourceLoader.loadStream("fonts/prstartk.ttf")).deriveFont(30f);
+		} catch (FontFormatException | IOException e) {
+			e.printStackTrace();
+			CrashHandler.throwError(e.toString());
+		}
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		ge.registerFont(gameFont);
+			
 	}
 	
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
+		FPSCounter.StartCounter();
 		doDrawing(g);
-		
 		Toolkit.getDefaultToolkit().sync();
+		FPSCounter.StopAndPost();
 	}
 	
 	private void doDrawing(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
-		
-		
+		g2d.setFont(gameFont.deriveFont(11f));
 		
 		drawBackground(g2d);
 		drawShip(g2d);
@@ -116,30 +169,60 @@ public class Board extends JPanel implements ActionListener {
 		drawHealthBar(g2d);
 		drawWeaponBar(g2d);
 		drawSettingsBar(g2d);
-		drawTimer(g2d);
-		
-		g2d.drawRect(0, Game.BHEIGHT, Game.BWIDTH, 2);
-		g2d.drawRect(0, 20, Game.BWIDTH, 2);
 		
 		if(DEVMENU) {
 			drawDevMenu(g2d);
 		}
+		drawFPSCounter(g2d);
+		drawTimer(g2d);
+		drawBorder(g2d);
+		
+		g2d.setColor(Color.cyan);
+	}
+	
+	private void drawDevMenu(Graphics2D g2d) {
+		// Draws the x and y coordinate of the ship
+		g2d.setColor(Color.darkGray);
+		g2d.drawString("x=" + ship.getX() + "y=" + ship.getY(), 130, 14);
+		
+		// Draws the gameStates
+		g2d.setColor(Color.darkGray);
+		g2d.drawString("gameState : " + Game.gameState, 400, 14);
+	}
+	
+	private void drawFPSCounter(Graphics2D g2d) {
+		g2d.setColor(Color.darkGray);
+		g2d.drawString("FPS:" + FPSCounter.fps, 0, 14);
 	}
 	
 	private void drawBackground(Graphics2D g2d) {
 		g2d.drawImage(ResourceLoader.loadImage("animations/stage/starbackground.gif"), 0, 0, null);
 	}
+	
+	//Draws Settings Bar (music on or off, game paused or playing)
 	private void drawSettingsBar(Graphics2D g2d) {
-		Image music;
+		
+		Image music = null;
+		Image status = null;
+		
 		g2d.setColor(Color.lightGray);
 		g2d.fillRoundRect(Game.BWIDTH/2-45, Game.BHEIGHT+50, 80, 40, 10, 10);
-		if(audioPlayer.getStatus().equals("unmuted")) {
+		
+		if(audioPlayer.getStatus().equals("play")) 
 			music = new MusicOn(0, 0).getImage();
-			g2d.drawImage(music, Game.BWIDTH/2-40, Game.BHEIGHT+55, music.getWidth(null)*2, music.getHeight(null)*2,  null);
-		} else if(audioPlayer.getStatus().equals("muted")) {
+		else if(audioPlayer.getStatus().equals("paused")) 
 			music = new MusicOff(0,0).getImage();
-			g2d.drawImage(music, Game.BWIDTH/2-40, Game.BHEIGHT+55, music.getWidth(null)*2, music.getHeight(null)*2,  null);
-		} 
+		
+		
+		if(Game.status.equals("playing")) 
+			status = new Play(0, 0).getImage();
+		else if(Game.status.equals("paused")) 
+			status = new Pause(0, 0).getImage();
+		
+		
+		g2d.drawImage(music, Game.BWIDTH/2-40, Game.BHEIGHT+55, music.getWidth(null)*2, music.getHeight(null)*2,  null);
+		g2d.drawImage(status, Game.BWIDTH/2, Game.BHEIGHT+55, music.getWidth(null)*2, music.getHeight(null)*2,  null);
+
 		
 	}
 	private void drawWeaponBar(Graphics2D g2d) {
@@ -164,50 +247,77 @@ public class Board extends JPanel implements ActionListener {
 	}
 	
 	private void drawTimer(Graphics2D g2d) {
-		g2d.setColor(Color.DARK_GRAY);
-		g2d.drawString("Time: " + (System.currentTimeMillis()-startTime)/1000.0, 100, 10);
 		
+		g2d.setColor(Color.DARK_GRAY);
+		g2d.drawString("Time: " + (System.currentTimeMillis()-startTime)/1000.0, 100, 14);
+		
+		pause(g2d);
 		win(g2d);
 		lose(g2d);
 	}
 	
+	private void drawBorder(Graphics2D g2d) {
+		g2d.drawRect(0, Game.BHEIGHT, Game.BWIDTH, 2);
+		g2d.drawRect(0, 20, Game.BWIDTH, 2);
+	}
+	
+	//Checks for pause scenario
+	private void pause(Graphics2D g2d) {
+		if(Game.status.equals("paused")) {
+			g2d.setFont(gameFont);
+			g2d.setColor(Color.GRAY);
+			g2d.drawString("Paused...", 200, 150);
+		}
+	}
+	
+	//Checks for win scenario
 	private void win(Graphics2D g2d) {
 		if(enemies.size() <= 0) {
-			g2d.setFont(new Font("Consolas", 100, 100));
+			g2d.setFont(gameFont.deriveFont(50f));
 			g2d.setColor(Color.cyan);
-			g2d.drawString("You Win!", 200, 90);
+			g2d.drawString("You Win!", 270, 120);
 			g2d.drawString("Time: " + endTime + " secs", 50, 250);
-			g2d.setFont(new Font("Consolas", 100, 50));
-			g2d.drawString("Press R To Restart", 50, 300);
+			g2d.setFont(gameFont);
+			g2d.drawString("Press R To Restart...", 200, 390);
+			for(Enemy e: enemies) {
+				e.stopTimer();
+			}
 			Game.gameState = 1;
 			ship.win();
 		}
 	}
 	
+	//Checks for lose scenario
 	private void lose(Graphics2D g2d) {
 		if(ships.size() <=0 ) {
-			g2d.setFont(new Font("Consolas", 100, 100));
-			g2d.setColor(Color.cyan);
-			g2d.drawString("You Lose!", 200, 90);
+			g2d.setFont(gameFont.deriveFont(50f));
+			g2d.setColor(Color.red);
+			g2d.drawString("You Lose!", 270, 120);
 			g2d.drawString("Time: " + endTime + " secs", 50, 250);
-			g2d.setFont(new Font("Consolas", 100, 50));
-			g2d.drawString("Press R To Restart", 50, 300);
+			g2d.setFont(gameFont);
+			g2d.drawString("Press R To Restart...", 200, 390);
 			for(Enemy e: enemies) {
 				e.stopTimer();
 			}
 			Game.gameState = 1;
 		}
+		
 	}
+	
 	private void drawProjectiles(Graphics2D g2d) {
-		Iterator it2; 
-		Iterator it1 = ship.getAmmoFired().iterator();
+		Iterator<?> it2; 
+		Iterator<?> it1 = ship.getAmmoFired().iterator();
 		
 		while(it1.hasNext()){
 			Ammunition ammo = (Ammunition) it1.next();
 			g2d.drawImage(ammo.getImage(), ammo.getX(), ammo.getY(), (int)(ammo.getWidth() * (SCALE/2)), (int)(ammo.getHeight() * (SCALE/2)), this);
 			if(SHOWHITBOX) {
 				g2d.setColor(Color.green);
-				g2d.draw(ammo.getHitBox());
+				HitBox hitbox = ammo.getHitBox();
+				g2d.setFont(new Font("Arial", Font.BOLD, 13));
+				g2d.drawOval(hitbox.getX(), hitbox.getY(), (int)(hitbox.getRadius()*SCALE), (int)(hitbox.getRadius()*SCALE));
+				g2d.drawString("hitbox: " + hitbox.getX() + ", " + hitbox.getY(), ammo.getX()+20, ammo.getY()-10);
+				g2d.drawString("radius: " + hitbox.getRadius(), ammo.getX()+20, ammo.getY());
 			}
 		}
 		
@@ -219,7 +329,11 @@ public class Board extends JPanel implements ActionListener {
 				Attack a = (Attack) it2.next();
 				g2d.drawImage(a.getImage(), a.getX(), a.getY(), (int)(a.getWidth() * (SCALE/2)), (int)(a.getHeight() * (SCALE/2)), this);
 				if(SHOWHITBOX) {
-					g2d.draw(a.getHitBox());
+					HitBox hitbox = a.getHitBox();
+					g2d.setFont(new Font("Arial", Font.BOLD, 13));
+					g2d.drawOval(hitbox.getX(), hitbox.getY(), (int)(hitbox.getRadius()*SCALE), (int)(hitbox.getRadius()*SCALE));
+					g2d.drawString("hitbox: " + hitbox.getX() + ", " + hitbox.getY(), a.getX()+20, a.getY()-10);
+					g2d.drawString("radius: " + hitbox.getRadius(), a.getX()+20, a.getY());
 				}
 			}	
 		}
@@ -230,7 +344,12 @@ public class Board extends JPanel implements ActionListener {
 			g2d.drawImage(e.getImage(), e.getX(), e.getY(), e.getWidth(), e.getHeight(), this);
 			if(SHOWHITBOX) {
 				g2d.setColor(Color.green);
-				g2d.draw(e.getHitBox());
+				
+				HitBox hitbox = e.getHitBox();
+				g2d.setFont(new Font("Arial", Font.BOLD, 13));
+				g2d.drawOval(hitbox.getX(), hitbox.getY(), (int)(hitbox.getRadius()*SCALE), (int)(hitbox.getRadius()*SCALE));
+				g2d.drawString("hitbox: " + hitbox.getX() + ", " + hitbox.getY(), e.getX()+20, e.getY()-10);
+				g2d.drawString("radius: " + hitbox.getRadius(), e.getX()+20, e.getY());
 			}
 		}
 	}
@@ -239,13 +358,19 @@ public class Board extends JPanel implements ActionListener {
 		g2d.drawImage(ship.getImage(), ship.getX(), ship.getY(), (int)(ship.getWidth() * SCALE), (int)(ship.getHeight() * SCALE), this);
 		if(SHOWHITBOX) {
 			g2d.setColor(Color.green);
-			g2d.draw(ship.getHitBox());
-		}
+			g2d.setFont(new Font("Arial", Font.BOLD, 13));
+			HitBox hitbox = ship.getHitBox();
+			g2d.drawOval(hitbox.getX(), hitbox.getY(), (int)(hitbox.getRadius()*SCALE), (int)(hitbox.getRadius()*SCALE));
+			g2d.drawString("hitbox: " + hitbox.getX() + ", " + hitbox.getY(), ship.getX()+20, ship.getY());
+			g2d.drawString("radius: " + hitbox.getRadius(), ship.getX()+20, ship.getY()+10);
+			}
 	}
 	
 	private void drawHealthBar(Graphics2D g2d) {
+		
 		Rectangle bar;
 		Rectangle health;
+		g2d.setFont(gameFont.deriveFont(10f));
 		for(Enemy e : enemies) {
 			if(e.isBoss()) {
 				bar = new Rectangle( Game.BWIDTH-370, Game.BHEIGHT+65, 350, 20);
@@ -253,14 +378,13 @@ public class Board extends JPanel implements ActionListener {
 			} else {
 				bar = new Rectangle( e.getX(), e.getY() + e.getHeight()+10, e.getWidth(), 10);
 				health = new Rectangle( bar.x+1, bar.y+1, (int)(barCalculate(e))-1 , 10);
-				
 			}
 			g2d.setColor(Color.gray);
 			g2d.draw(bar);
 			g2d.setColor(Color.red);
 			g2d.fill(health);
 			g2d.setColor(Color.white);
-			g2d.drawString(e.getHealth() + "/" + e.getMaxHealth(), (int)(bar.x*1.01), bar.y+10);
+			g2d.drawString(e.getHealth() + "/" + e.getMaxHealth(), (int)(bar.x*1.01), bar.y+14);
 			
 		}
 		
@@ -271,103 +395,92 @@ public class Board extends JPanel implements ActionListener {
 		g2d.setColor(Color.red);
 		g2d.fill(health);
 		g2d.setColor(Color.white);
-		g2d.drawString(ship.getHealth() + "/" + ship.getMaxHealth(), (int)(bar.x*1.01), bar.y+10);
+		g2d.drawString(ship.getHealth() + "/" + ship.getMaxHealth(), (int)(bar.x*1.01), bar.y+14);
 		
 	}
 	
+	//Calculates Enemy HP bar size
 	private int barCalculate(Enemy e) {
 		return (int)(e.getHealth()/e.getMaxHealth() * e.getWidth());
 	}
 	
+	//Calculates Boss HP bar size
 	private int barCalculateBoss(Enemy e, int width) {
 		return (int)(e.getHealth()/e.getMaxHealth() * width);
 	}
 	
+	//Calculates Ship HP bar size
 	private int barCalculateShip(Ship ship, int width) {
 		return (int)(ship.getHealth()/ship.getMaxHealth() * width);
 	}
 	
 	
-	private void drawDevMenu(Graphics2D g2d) {
-		
-		//This draws the ships current x and y position.
-		g2d.setColor(Color.darkGray);
-		g2d.drawString("x = " + ship.getX() + "y = " + ship.getY(), 0, 10);
-		
-	}
+	
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		 ship.tick();
-		 if(Game.gameState == 0) {
-			 updateMissiles();
-			 updateShip();
-			 updateEnemies();
-			 checkCollision();
-			 
-		 } else if(Game.gameState == 1 && input.r.isPressed()) {
-			 restart();
-		 }
-		 repaint();
+		
+		if(Game.gameState == 0) {
+			ship.tick();
+			updateProjectiles();
+			updateShip();
+			updateEnemies();
+			checkCollision();
+		}
+		if(Game.gameState == 1 && input.r.isPressed()) {
+			restart();
+		}
+		repaint();
 	}
 	
+	//Checks for HitBox collision
 	private void checkCollision() {
 		
-//		Iterator<Enemy> it1 = enemies.iterator();
-//		Iterator<Ammunition> it2 = ship.getAmmoFired().iterator();
-//		while(it1.hasNext()) {
-//			Rectangle2D r2 = it1.next().getHitBox();
-//			Enemy e = it1.next();
-//			while(it2.hasNext()) {
-//				Rectangle2D r1 = it2.next().getHitBox();
-//				Ammunition a = it2.next();
-//				if(r1.intersects(r2)) {
-//					e.damage(a.getDamage());
-//					a.setVisible(false);
-//				} 
-//			}
-// 		}
+		HitBox hb1;
+		HitBox hb2;
 		
-		Rectangle2D r1;
-		Rectangle2D r2;
-		List<Ammunition> ammunition = ship.getAmmoFired();
-		for(Enemy e : enemies) {
-			r2 = e.getHitBox();
+		Iterator<Enemy> it1 = enemies.iterator();
+		Iterator<Ammunition> it2 = ship.getAmmoFired().iterator();
+		
+		while(it1.hasNext()) {
+			Enemy e = it1.next();
+			hb2 = e.getHitBox();
 			
-			for(Ammunition m : ammunition) {
-				r1 = m.getHitBox();
+			while(it2.hasNext()) {
+				Ammunition a = it2.next();
+				hb1 = a.getHitBox();
 				
-				if(r1.intersects(r2)) {
-					m.setVisible(false);
-					e.damage(m.getDamage());
-				}
-			}
-		}
-
-		r1 = ship.getHitBox();
-		for(Enemy e : enemies) {
-			for(Attack a : e.getAttacks()) {
-				r2 = a.getHitBox();
-				
-				if(r1.intersects(r2)) {
+				//TODO multiple hitboxes on a single enemy
+				if(hb1.intersects(hb2)) {
+					e.damage(a.getDamage());
 					a.setVisible(false);
-					ship.damage(a.getDamage());
-				}
+				} 
+			}
+ 		}
+
+		hb1 = ship.getHitBox();
+		for(Enemy en : enemies) {
+			for(Attack at : en.getAttacks()) {
+				hb2 = at.getHitBox();
 				
+				if(hb1.intersects(hb2)) {
+					at.setVisible(false);
+					ship.damage(at.getDamage());
+				}
 			}
 		}
 		
-		r1 = ship.getHitBox();
-		for(Enemy e : enemies) {
-			r2 = e.getHitBox();
+		hb1 = ship.getHitBox();
+		for(Enemy en : enemies) {
+			hb2 = en.getHitBox();
 			
-			if(r1.intersects(r2)) {
+			if(hb1.intersects(hb2)) {
 				ship.damage(1);
 			}
 		}
-		
 	}
 	
+	//Updates Enemy x and y positions
 	private void updateEnemies() {
 		for(int i = 0; i < enemies.size(); i++) {
 			Enemy enemy = enemies.get(i);
@@ -387,6 +500,7 @@ public class Board extends JPanel implements ActionListener {
 		}
 	}
 	
+	//Updates Ship x and y position
 	private void updateShip() {
 		for(int i = 0; i < ships.size(); i++) {
 			if(ships.get(i).isVisible()) {
@@ -400,7 +514,8 @@ public class Board extends JPanel implements ActionListener {
 	    
 	}    
 	
-	private void updateMissiles() {
+	//Updates Projectile x and y position
+	private void updateProjectiles() {
 		
 		List<Ammunition> ammunition = ship.getAmmoFired();
 		
@@ -431,6 +546,6 @@ public class Board extends JPanel implements ActionListener {
 				}
 			}
 		}
-			
+
 	}
 }

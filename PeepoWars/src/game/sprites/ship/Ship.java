@@ -1,5 +1,4 @@
 package game.sprites.ship;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +6,7 @@ import game.Board;
 import game.Game;
 import game.InputHandler;
 import game.sprites.Ammunition;
+import game.sprites.HitBox;
 import game.sprites.Sprite;
 import game.sprites.ammunition.Laser;
 import game.sprites.ammunition.Missile;
@@ -35,12 +35,16 @@ public class Ship extends Sprite {
 		setVisible(false);
 	}
 	
+	public void lose() {
+		loadImage("animations/ship/shipdie.gif");
+		getImageDimensions(.3);
+		setVisible(false);
+	}
+	
 	public void damage(int damage) {
 		health -= damage;
 		if(health <= 0) {
-			loadImage("animations/ship/shipdie.gif");
-			getImageDimensions(.3);
-			setVisible(false);
+			lose();
 		}
 	}
 	
@@ -141,7 +145,7 @@ public class Ship extends Sprite {
 		 }
 	 }
 	 
-	 public Rectangle2D getHitBox() {
-			return new Rectangle2D.Double(x, y, getWidth()*Board.SCALE, getHeight()*Board.SCALE);
-		}
+	public HitBox getHitBox() {
+		return new HitBox(x+2 ,y+2 ,  (int) (Math.min(getWidth(), getHeight())/1.7), 0);
+	}
 }

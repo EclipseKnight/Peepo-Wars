@@ -5,6 +5,9 @@ import java.awt.event.ActionListener;
 
 import javax.swing.Timer;
 
+
+
+
 public class Boss extends Enemy implements ActionListener {
 	private Timer timer;
 	
@@ -17,14 +20,18 @@ public class Boss extends Enemy implements ActionListener {
 		timer.start();
 	}
 	
+	
 	public void stopTimer() {
 		timer.stop();
 	}
 	
+	public void startTimer() {
+		timer.start();
+	}
+	
 	public void setTimerDelay(int delay) {
 		if(timer == null) {
-			timer = new Timer(delay, this);
-			timer.start();
+			startTimer(delay);
 		}
 		if(!timer.isRunning()) {
 			timer.start();
@@ -32,6 +39,7 @@ public class Boss extends Enemy implements ActionListener {
 			timer.setDelay(delay);
 		}
 	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		attack();

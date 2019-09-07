@@ -36,17 +36,44 @@ public class InputHandler implements KeyListener {
     public Key two = new Key();
     public Key h = new Key();
     public Key r = new Key();
+    public Key m = new Key();
     public Key p = new Key();
 
     public void keyPressed(KeyEvent e) {
         toggleKey(e.getKeyCode(), true);
         
-        if(e.getKeyCode() == KeyEvent.VK_P) {
-        	if(Board.audioPlayer.status.equals("muted")) {
-        		Board.audioPlayer.mute(false);
-        	} else if(Board.audioPlayer.status.equals("unmuted")) {
-        		Board.audioPlayer.mute(true);
+        //Pause the music
+        if(e.getKeyCode() == KeyEvent.VK_M) {
+        	if(Board.audioPlayer.status.equals("play")) {
+        		Board.audioPlayer.pause();
+        	} else if(Board.audioPlayer.status.equals("paused")) {
+        		Board.audioPlayer.resume();
         	}
+        }
+        
+        //Pauses the Game
+        if(e.getKeyCode() == KeyEvent.VK_P) {
+        	
+        	if(Game.gameState != 2 && Game.gameState != 1) {
+        		Game.lastGameState = Game.gameState;
+        		Game.gameState = 2;
+        		Board.pause();
+        	} else if(Game.gameState == 2) {
+        		Game.gameState = Game.lastGameState;
+        		Board.resume();
+        	}
+        }
+        if(e.getKeyCode() == KeyEvent.VK_H) {
+        	if(Board.SHOWHITBOX) {
+        		Board.SHOWHITBOX = false;
+        		Board.DEVMENU = false;
+        	}
+        		
+        	else {
+        		Board.SHOWHITBOX = true;
+        		Board.DEVMENU = true;
+        	}
+        		
         }
     }
 
@@ -79,9 +106,6 @@ public class InputHandler implements KeyListener {
         }
         if(keyCode == KeyEvent.VK_2) {
         	two.toggle(isPressed);
-        }
-        if(keyCode == KeyEvent.VK_H) {
-        	h.toggle(isPressed);
         }
         if(keyCode == KeyEvent.VK_R) {
         	r.toggle(isPressed);

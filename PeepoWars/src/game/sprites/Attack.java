@@ -37,6 +37,7 @@ public class Attack extends Sprite {
 		this.damage = damage;
 	}
 	
+	//How the attack moves
 	public void move() {
 		
 	}

@@ -1,6 +1,8 @@
 package resources;
 import java.awt.Image;
+import java.io.File;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 
 import javax.swing.ImageIcon;
 
@@ -14,12 +16,23 @@ public class ResourceLoader {
 		return ii.getImage();
 	}
 	
-	public static InputStream loadMusic(String musicName) {
-		InputStream in = rl.getClass().getResourceAsStream(musicName);
+	public static File loadFile(String fileName) {
+		File file = null;
+		try {
+			file = new File(rl.getClass().getResource(fileName).toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			CrashHandler.throwError(e.toString());
+		}
+		return file;
+	}
+	
+	public static InputStream loadStream(String fileName) {
+		InputStream in = rl.getClass().getResourceAsStream(fileName);
 		if(in != null) {
 			return in;
 		}
-		CrashHandler.throwError(musicName + " not found");
+		CrashHandler.throwError(fileName + " not found");
 		return null;
 	}
 }

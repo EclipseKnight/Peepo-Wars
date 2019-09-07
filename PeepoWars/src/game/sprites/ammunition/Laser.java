@@ -1,8 +1,7 @@
 package game.sprites.ammunition;
 
-import java.awt.geom.Rectangle2D;
-
 import game.sprites.Ammunition;
+import game.sprites.HitBox;
 
 public class Laser extends Ammunition {
 
@@ -21,7 +20,7 @@ public class Laser extends Ammunition {
 		 getImageDimensions(1);
 	}
 	
-	public Rectangle2D getHitBox() {
-		return new Rectangle2D.Double(x, y, getWidth(), getHeight());
+	public HitBox getHitBox() {
+		return new HitBox(x, y, Math.min(getWidth(), getHeight()), 0);
 	}
 }

@@ -1,6 +1,5 @@
 package game.sprites;
 import java.awt.Image;
-import java.awt.geom.Rectangle2D;
 
 import javax.swing.ImageIcon;
 
@@ -12,7 +11,7 @@ public class Sprite {
 	protected int y;
 	protected int width;
 	protected int height;
-	protected boolean visible;
+	protected boolean visible; //Crucial for removing sprites from lists.
 	protected Image image;
 	
 	public Sprite(int x, int y) {
@@ -75,7 +74,21 @@ public class Sprite {
 		this.visible = visible;
 	}
 	
-	public Rectangle2D getHitBox() {
+	public HitBox getHitBox() {
 		return null;
 	}
+	
+//	public List<Point2D> getCircle(HitBox hb) {
+//		List<Point2D> points = new ArrayList<>();
+//		int theta = 0;
+//		double x;
+//		double y;
+//		while(theta < 360) {
+//			x = ((hb.getX() + hb.getRadius()) + hb.getRadius() * Math.cos(theta));
+//			y = ((hb.getY() + hb.getRadius()) + hb.getRadius() * Math.sin(theta));
+//			points.add(new Point2D.Double(x, y));
+//			theta++;
+//		}
+//		return points;
+//	}
 }

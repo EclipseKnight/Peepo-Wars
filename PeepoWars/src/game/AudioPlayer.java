@@ -21,7 +21,7 @@ public class AudioPlayer {
 	Clip clip;
 	
 	//Current status of clip.
-	String status;
+	String status; //play, paused, 
 	
 	InputStream audioSrc;
 	InputStream bufferedIn;
@@ -32,7 +32,7 @@ public class AudioPlayer {
 	
 	//Constructor to initialize streams and clip.
 	public AudioPlayer() {
-		audioSrc = ResourceLoader.loadMusic(filePath);
+		audioSrc = ResourceLoader.loadStream(filePath);
 		bufferedIn = new BufferedInputStream(audioSrc);
 		//Create AudioInputStream object
 			try {
@@ -76,7 +76,6 @@ public class AudioPlayer {
 	public void play() {
 		clip.start();
 		status = "play";
-		status = "unmuted";
 	}
 	
 	//Mute the audio
@@ -96,8 +95,8 @@ public class AudioPlayer {
 			return;
 		}
 		
-//		currentFrame = clip.getMicrosecondPosition();
-//		clip.stop();
+		currentFrame = clip.getMicrosecondPosition();
+		clip.stop();
 		status = "paused";
 	}
 	
@@ -117,20 +116,26 @@ public class AudioPlayer {
 		clip.close();
 	}
 	
-	public void resumeAudio() {
+	public void resume() {
 		if(status.equals("play")) {
-			System.out.println("Audio is already being played");
 			return;
 		}
-		clip.close();
-		resetAudioStream();
+		
+		try {
+			clip.open();
+		} catch (LineUnavailableException e) {
+			e.printStackTrace();
+		}
+//		resetAudioStream();
 		clip.setMicrosecondPosition(currentFrame);
 		play();
 	}
 	
 	public void resetAudioStream() {
+		audioSrc = ResourceLoader.loadStream(filePath);
+		bufferedIn = new BufferedInputStream(audioSrc);
 		try {
-			audioInputStream = AudioSystem.getAudioInputStream(ResourceLoader.loadMusic(filePath));
+			audioInputStream = AudioSystem.getAudioInputStream(bufferedIn);
 		} catch (UnsupportedAudioFileException | IOException e) {
 			e.printStackTrace();
 			CrashHandler.throwError(e.toString());

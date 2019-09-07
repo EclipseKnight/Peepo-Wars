@@ -1,8 +1,7 @@
 package game.sprites.attacks;
 
-import java.awt.geom.Rectangle2D;
-
 import game.sprites.Attack;
+import game.sprites.HitBox;
 
 public class IceFist extends Attack {
 
@@ -28,8 +27,8 @@ public class IceFist extends Attack {
 		}
 	}
 	
-	public Rectangle2D getHitBox() {
-		return new Rectangle2D.Double(x+8, y+18, getWidth()*.55, getHeight()*.7);
+	public HitBox getHitBox() {
+		return new HitBox(x+6 , y+16, (int) (Math.min(getWidth(), getHeight())/2.5), 0);
 	}
 
 }

@@ -1,12 +1,12 @@
 package game.sprites.enemies;
 
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import game.Game;
 import game.sprites.Attack;
 import game.sprites.Boss;
+import game.sprites.HitBox;
 import game.sprites.attacks.IceFist;
 import game.sprites.attacks.IceWave;
 
@@ -17,10 +17,10 @@ public class StrobeKing extends Boss {
 	private final static int DELAY = 1000;
 	private final static boolean ISBOSS = true;
 	private List<Attack> attacks;
-	private int atkCounter = 0;
+	private int atkCounter = 0; //Tracks number of attacks for pattern
 	
-	private boolean moveUp = true;
-	private int pixelsMoved = 0;
+	private boolean moveUp = true;//Variable that confirms what direction to move based on the coin flip.
+	private int pixelsMoved = 0; //Tracks how many pixels the boss moves to then change directions.
 	
 	public StrobeKing(int x, int y) {
 		super(x, y, SPEED, DELAY, HEALTH, HEALTH, ISBOSS);
@@ -51,11 +51,21 @@ public class StrobeKing extends Boss {
 		Attack attack = null;
 		atkCounter++;
 		if(health < 1000 && atkCounter <= 3) {
+			//Creates new attack
 			attack = new IceFist(x - width, y + height/2);
+			
+			//Sets the attack delay for the boss attack timer (might be unnecessary)
 			attack.setDelay((int)(attack.getDelay()*.75));
+			
+			//Sets the attack speed
 			attack.setSpeed((int)(attack.getSpeed()*1.25));
+			
+			//Sets the boss attack timer to the attack delay
 			setTimerDelay(attack.getDelay());
+			
+			//Adds attack to list
 			attacks.add(attack);
+			
 		} else if(atkCounter <=3 ) {
 			attack = new IceFist(x - width, y + height / 2);
 			setTimerDelay(attack.getDelay());
@@ -66,6 +76,7 @@ public class StrobeKing extends Boss {
 			setTimerDelay(attack.getDelay());
 			attacks.add(attack);
 		}
+		
 	}
 	
 	public void move() {
@@ -74,11 +85,12 @@ public class StrobeKing extends Boss {
 			moveUp = flipCoin();
 			pixelsMoved = 0;
 		}
+		
 		if(y >= Game.BHEIGHT-150) {
 			moveUp = false;
 			
 		} else if(y < Game.BHEIGHT-150 && moveUp) {
-			y += SPEED;
+			y += SPEED;	
 		}
 		
 		if(!moveUp && y >= 5) {
@@ -89,6 +101,8 @@ public class StrobeKing extends Boss {
 		
 		
 	}
+	
+	//flips a coin (50/50)
 	public boolean flipCoin() {
 		double x = Math.random();
 		if(x >= .5)
@@ -98,8 +112,8 @@ public class StrobeKing extends Boss {
 		}
 		return false;
 	}
-	public Rectangle2D getHitBox() {
-		return new Rectangle2D.Double(x, y+20, getWidth(), getHeight()*.8);
+	public HitBox getHitBox() {
+		return new HitBox(x , y, Math.min(getWidth()/2, getHeight()/2), 0);
 	}
 
 }
